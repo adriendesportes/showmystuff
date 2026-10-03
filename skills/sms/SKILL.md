@@ -32,7 +32,8 @@ Ask only what you cannot infer; propose defaults in the same message:
 - Language of the voice and subtitles; voice provider:
   - `edge` (default, free, online, good quality, word timings),
   - `say` (macOS, fully offline) or `piper` (offline, needs a model),
-  - `elevenlabs` (premium): key via `sms key elevenlabs` or `ELEVENLABS_API_KEY`, never in a file of the project.
+  - `elevenlabs` (premium): key via `sms key elevenlabs` (OS keychain, or `~/.config/showmystuff/` on Linux)
+    or `ELEVENLABS_API_KEY`, never in a file of the project.
 - Theme: `paper` (warm light), `snow` (clean light), `slate` (dark). Brand name, logo (SVG/PNG), URL.
 
 ## 2. Project

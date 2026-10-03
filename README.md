@@ -32,8 +32,8 @@ first use if needed.
 ## Use it from Claude Code
 
 ```
-/sms  I want a 2-minute video of my invoicing app running at http://localhost:3000.
-      Audience: new users. Show the dashboard, creating an invoice and the reminders page.
+/sms  I want a 2-minute video of my team notes app running at http://localhost:3000.
+      Audience: new users. Show the dashboard, creating a note and sharing it with a team.
       French voice, dark theme.
 ```
 
@@ -96,8 +96,9 @@ scenario.json ─────► sms voice ────► build/voice/<scene>.w
 
 - Capture only local instances or demo data; the capture tool refuses non-local URLs unless
   `--allow-remote`, and refuses pages containing `forbidden` patterns you define.
-- No key is ever written into a project. ElevenLabs keys live in the OS keychain
-  (`sms key elevenlabs`) or in `ELEVENLABS_API_KEY`.
+- No key is ever written into a project. `sms key elevenlabs` stores the ElevenLabs key in the
+  macOS keychain (on Linux: `~/.config/showmystuff/elevenlabs.key`, mode 600); `ELEVENLABS_API_KEY`
+  also works.
 - Generated files (`build/`, `out/`, audio) are git-ignored by the project template.
 
 ## Licence

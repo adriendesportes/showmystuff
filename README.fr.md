@@ -33,8 +33,8 @@ utilisation si besoin.
 ## Depuis Claude Code
 
 ```
-/sms  Je veux une vidéo de 2 minutes de mon appli de facturation sur http://localhost:3000.
-      Public : nouveaux utilisateurs. Montrer le tableau de bord, la création d'une facture et les relances.
+/sms  Je veux une vidéo de 2 minutes de mon appli de notes d'équipe sur http://localhost:3000.
+      Public : nouveaux utilisateurs. Montrer le tableau de bord, la création d'une note et son partage.
       Voix française, thème sombre.
 ```
 
@@ -85,8 +85,9 @@ scenario.json ─────► sms voice ────► build/voice/<scène>.
 - Ne capturez que des instances locales ou des données de démonstration ; l'outil de capture refuse
   les URL non locales sans `--allow-remote`, et refuse les pages contenant les motifs `forbidden`
   que vous définissez.
-- Aucune clé n'est jamais écrite dans un projet. La clé ElevenLabs vit dans le trousseau du système
-  (`sms key elevenlabs`) ou dans `ELEVENLABS_API_KEY`.
+- Aucune clé n'est jamais écrite dans un projet. `sms key elevenlabs` range la clé ElevenLabs dans le
+  trousseau macOS (sous Linux : `~/.config/showmystuff/elevenlabs.key`, mode 600) ; la variable
+  `ELEVENLABS_API_KEY` fonctionne aussi.
 - Les fichiers générés (`build/`, `out/`, audio) sont ignorés par Git dans le modèle de projet.
 
 ## Licence
