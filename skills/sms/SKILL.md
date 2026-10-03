@@ -14,13 +14,14 @@ scenario, not on code.
 ```bash
 SMS_HOME="${SMS_HOME:-${CLAUDE_PLUGIN_ROOT:-$HOME/.showmystuff}}"
 [ -x "$SMS_HOME/bin/sms" ] || { curl -fsSL https://raw.githubusercontent.com/adriendesportes/showmystuff/main/install.sh | SMS_NO_SETUP=1 bash; SMS_HOME="$HOME/.showmystuff"; }
-alias sms="$SMS_HOME/bin/sms"
-sms doctor
+"$SMS_HOME/bin/sms" doctor
 ```
 
-If `sms doctor` reports a blocking problem, run `sms setup` (installs npm deps, a Python venv and
-Chromium), then `sms doctor` again. Tell the user what is missing only if setup cannot fix it
-(for example ffmpeg). If a `~/.local/bin/sms` link exists, plain `sms` works too.
+Each Bash call is a fresh shell: always invoke the binary by its path, `"$SMS_HOME/bin/sms" …`
+(below, `sms` stands for that path; `~/.local/bin/sms` is the same binary when the installer
+linked it). If `sms doctor` reports a blocking problem, run `sms setup` (installs npm deps, a
+Python venv and Chromium), then `sms doctor` again. Tell the user what is missing only if setup
+cannot fix it (for example ffmpeg).
 
 ## 1. Brief (keep it short)
 
