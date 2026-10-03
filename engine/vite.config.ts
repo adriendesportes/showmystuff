@@ -58,7 +58,7 @@ export default defineConfig({
       { find: "@sms", replacement: join(ENGINE, "src") },
     ],
   },
-  server: { port: Number(process.env.SMS_PORT ?? config.previewPort ?? 5190), strictPort: false, fs: { allow: [ENGINE, PROJECT] } },
+  server: { host: "127.0.0.1", port: Number(process.env.SMS_PORT ?? config.previewPort ?? 5190), strictPort: false, fs: { allow: [ENGINE, PROJECT] } },
   build: { assetsInlineLimit: 0, chunkSizeWarningLimit: 6000, outDir: process.env.SMS_DIST ?? join(ENGINE, "dist"), emptyOutDir: true },
   logLevel: (process.env.SMS_LOGLEVEL as "info" | "warn") ?? "warn",
 });
