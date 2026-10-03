@@ -95,7 +95,8 @@ for (const [i, s] of (scenario.scenes ?? []).entries()) {
     props: s.props ?? {},
   };
   scenes.push(scene);
-  if (v) voice.push({ id: s.id, file: `../voice/${s.id}.wav`, start_s: (start + voiceStart) / FPS, gain_db: s.voiceGain ?? 0 });
+  // Only synthesised voices go to the mix (estimated ones have no WAV yet: the mix stays buildable without network).
+  if (v && existsSync(join(project, "build/voice", `${s.id}.wav`))) voice.push({ id: s.id, file: `../voice/${s.id}.wav`, start_s: (start + voiceStart) / FPS, gain_db: s.voiceGain ?? 0 });
 
   // Validate the cue references used in props (recursively) and sfx.
   const ctx = { fps: FPS, cues, duration, voiceStart, id: s.id };
