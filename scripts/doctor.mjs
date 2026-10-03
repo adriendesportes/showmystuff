@@ -52,8 +52,9 @@ const PY = ["/.venv/bin/python", "/.venv/Scripts/python.exe"].map((p) => join(HO
 if (!PY) add("python env", "fail", "virtual environment missing", "Run: sms setup");
 else {
   const v = sh(PY, ["--version"]).out;
-  const mods = sh(PY, ["-c", "import numpy, scipy, soundfile, pyloudnorm, edge_tts; print('ok')"]);
-  add("python env", mods.ok ? "ok" : "fail", `${v}${mods.ok ? "" : " · missing modules"}`, mods.ok ? "" : "Run: sms setup");
+  const mods = sh(PY, ["-c", "import numpy, scipy, soundfile, pyloudnorm, edge_tts; print('ok')"], { timeout: 90000 });
+  const why = mods.ok ? "" : ` · ${(mods.out.split("\n").filter(Boolean).at(-1) ?? "import failed").slice(0, 120)}`;
+  add("python env", mods.ok ? "ok" : "fail", `${v}${why}`, mods.ok ? "" : "Run: sms setup");
   const mpl = sh(PY, ["-c", "import matplotlib"]).ok;
   add("matplotlib (optional)", mpl ? "ok" : "warn", mpl ? "" : "spectrograms will use ffmpeg instead", "");
 }

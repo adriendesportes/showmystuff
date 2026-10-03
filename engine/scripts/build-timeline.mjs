@@ -95,7 +95,7 @@ for (const [i, s] of (scenario.scenes ?? []).entries()) {
     props: s.props ?? {},
   };
   scenes.push(scene);
-  if (v) voice.push({ id: s.id, file: `voice/${s.id}.wav`, start_s: (start + voiceStart) / FPS, gain_db: s.voiceGain ?? 0 });
+  if (v) voice.push({ id: s.id, file: `../voice/${s.id}.wav`, start_s: (start + voiceStart) / FPS, gain_db: s.voiceGain ?? 0 });
 
   // Validate the cue references used in props (recursively) and sfx.
   const ctx = { fps: FPS, cues, duration, voiceStart, id: s.id };
