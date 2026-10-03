@@ -140,7 +140,7 @@ Each command takes --project <dir> (default: the nearest showmystuff.json).`);
     cfg.output = `out/${name}.mp4`;
     cfg.language = String(flags.lang ?? cfg.language ?? "en");
     cfg.theme = { ...cfg.theme, preset: String(flags.theme ?? cfg.theme?.preset ?? "paper") };
-    cfg.brand = { ...cfg.brand, name: String(flags.brand ?? cfg.brand?.name ?? basename(target)) };
+    cfg.brand = { ...cfg.brand, name: String(flags.brand ?? basename(target)) };
     writeFileSync(join(target, "showmystuff.json"), JSON.stringify(cfg, null, 2) + "\n");
     const scn = JSON.parse(readFileSync(join(target, "scenario.json"), "utf8"));
     scn.language = cfg.language;
