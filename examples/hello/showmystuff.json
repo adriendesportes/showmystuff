@@ -1,0 +1,13 @@
+{
+  "name": "hello",
+  "output": "out/hello.mp4",
+  "language": "en",
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "theme": { "preset": "paper" },
+  "brand": { "name": "Notely", "tagline": "Notes that move your team forward", "url": "notely.example" },
+  "overlay": { "chapterTag": true, "progress": true },
+  "subtitles": { "maxChars": 42 },
+  "render": { "crf": 18, "preset": "medium" }
+}

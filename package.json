@@ -1,0 +1,16 @@
+{
+  "name": "showmystuff",
+  "version": "0.1.0",
+  "description": "Show My Stuff (SMS): a toolkit and Claude Code skill that turns your software into a narrated demo video.",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "bin": { "sms": "./bin/sms" },
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "doctor": "node bin/sms doctor",
+    "test": "node scripts/selftest.mjs"
+  },
+  "repository": "https://github.com/adriendesportes/showmystuff"
+}

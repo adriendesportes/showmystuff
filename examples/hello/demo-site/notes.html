@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notely — new note</title>
+<link rel="stylesheet" href="data:text/css,">
+<style>
+  :root { --ink:#1f2430; --muted:#6b7280; --line:#e5e7eb; --accent:#4f46e5; --accent-soft:#eef2ff; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 15px/1.5 -apple-system, "Segoe UI", Inter, Roboto, sans-serif; color: var(--ink); background:#f8fafc; }
+  .app { display:grid; grid-template-columns: 240px 1fr; min-height:100vh; }
+  aside { background:#111827; color:#e5e7eb; padding:24px 18px; display:flex; flex-direction:column; gap:22px; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; color:#fff; }
+  .logo span { display:inline-grid; place-items:center; width:30px; height:30px; border-radius:8px; background:var(--accent); }
+  nav a { display:block; padding:9px 12px; border-radius:8px; color:#cbd5e1; text-decoration:none; }
+  nav a.active { background:#1f2937; color:#fff; }
+  main { padding:28px 36px; }
+  h1 { margin:0 0 18px; font-size:24px; }
+  form.new { display:grid; gap:14px; max-width:640px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:22px; }
+  label { display:grid; gap:6px; font-size:13px; color:var(--muted); }
+  input[type=text], textarea, select { font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; border:0; font:inherit; cursor:pointer; justify-self:start; }
+  .help { font-size:13px; color:var(--muted); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="logo"><span>N</span> Notely</div>
+    <nav>
+      <a href="/">Dashboard</a>
+      <a class="active" href="/notes.html">Notes</a>
+      <a href="#">Projects</a>
+      <a href="#">Reports</a>
+      <a href="#">Settings</a>
+    </nav>
+  </aside>
+  <main>
+    <h1>New note</h1>
+    <form class="new" id="form" onsubmit="return false">
+      <label>Title <input type="text" id="title" name="title" placeholder="Give it a clear title"></label>
+      <label>Project <select id="project" name="project"><option>Atlas</option><option>Research</option><option>Website</option></select></label>
+      <label>Content <textarea id="content" rows="6" placeholder="Write freely. Markdown is supported."></textarea></label>
+      <label>Share with <input type="text" id="share" name="share" placeholder="Type a name or a team"></label>
+      <button class="btn" id="save" type="submit">Save note</button>
+      <p class="help">Notes are saved automatically every few seconds.</p>
+    </form>
+  </main>
+</div>
+</body>
+</html>

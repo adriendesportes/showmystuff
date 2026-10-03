@@ -1,0 +1,13 @@
+{
+  "name": "showmystuff",
+  "owner": { "name": "Adrien Desportes", "url": "https://github.com/adriendesportes" },
+  "description": "Show My Stuff: make a demo video of your software from Claude Code.",
+  "plugins": [
+    {
+      "name": "showmystuff",
+      "source": "./",
+      "description": "The /sms skill and its video toolkit (capture, scenes, voice, music, mix, render).",
+      "version": "0.1.0"
+    }
+  ]
+}

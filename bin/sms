@@ -1,0 +1,251 @@
+#!/usr/bin/env node
+// Show My Stuff command line. Every heavy step is a ready-made script: Claude (or you)
+// only has to call these commands, which keeps token usage low when a video is rebuilt.
+import { spawn, spawnSync } from "node:child_process";
+import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync, chmodSync } from "node:fs";
+import { homedir } from "node:os";
+import { basename, dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HOME = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const ENGINE = join(HOME, "engine");
+const AUDIO = join(HOME, "audio");
+const PY = existsSync(join(HOME, ".venv/bin/python")) ? join(HOME, ".venv/bin/python") : existsSync(join(HOME, ".venv/Scripts/python.exe")) ? join(HOME, ".venv/Scripts/python.exe") : null;
+const VERSION = JSON.parse(readFileSync(join(HOME, "package.json"), "utf8")).version;
+
+const [, , command = "help", ...rest] = process.argv;
+const flags = {};
+const positional = [];
+for (let i = 0; i < rest.length; i++) {
+  const a = rest[i];
+  if (a.startsWith("--")) {
+    const k = a.slice(2);
+    const next = rest[i + 1];
+    if (next === undefined || next.startsWith("--")) flags[k] = true;
+    else { flags[k] = next; i++; }
+  } else positional.push(a);
+}
+
+function projectDir(required = true) {
+  let p = flags.project ?? process.env.SMS_PROJECT;
+  if (!p) {
+    let d = process.cwd();
+    while (true) {
+      if (existsSync(join(d, "showmystuff.json"))) { p = d; break; }
+      const up = resolve(d, "..");
+      if (up === d) break;
+      d = up;
+    }
+  }
+  if (!p || !existsSync(join(p, "showmystuff.json"))) {
+    if (!required) return null;
+    fail("No project here. Run `sms init <folder>` first, or pass --project <dir>.");
+  }
+  return resolve(p);
+}
+
+function fail(msg, code = 1) {
+  console.error(`sms: ${msg}`);
+  process.exit(code);
+}
+
+function run(cmd, args, opts = {}) {
+  return new Promise((ok, ko) => {
+    const p = spawn(cmd, args, { stdio: "inherit", ...opts });
+    p.on("error", ko);
+    p.on("exit", (code) => (code === 0 ? ok() : ko(Object.assign(new Error(`${basename(cmd)} ${args[0] ?? ""} failed (exit ${code})`), { code }))));
+  });
+}
+
+const passthrough = (names) => names.flatMap((n) => (flags[n] === undefined ? [] : flags[n] === true ? [`--${n}`] : [`--${n}`, String(flags[n])]));
+
+async function node(script, extra = []) {
+  const project = projectDir();
+  await run(process.execPath, [join(ENGINE, "scripts", script), "--project", project, ...extra], { env: { ...process.env, SMS_PROJECT: project } });
+}
+
+async function python(script, extra = []) {
+  if (!PY) fail("Python environment missing: run `sms setup` first.");
+  const project = projectDir();
+  await run(PY, [join(AUDIO, script), "--project", project, ...extra], { cwd: AUDIO, env: { ...process.env, SMS_PROJECT: project } });
+}
+
+const commands = {
+  async help() {
+    console.log(`Show My Stuff ${VERSION} — make a narrated demo video of your software.
+
+Setup
+  sms doctor [--json] [--url URL]     check the environment (node, ffmpeg, python, browser, screenshots, voices)
+  sms setup                           install dependencies (npm, python venv, Chromium)
+  sms key elevenlabs                  store an ElevenLabs API key in the OS keychain (never in a project)
+
+Project
+  sms init <folder> [--name N] [--lang en] [--theme paper|slate|snow]   scaffold a new video project
+  sms capture [plan.json] [--serve DIR] [--base-url URL]              screenshot the app per the capture plan
+  sms voices <edge|say|elevenlabs|piper> [--lang fr] [--search NAME]  list available voices
+  sms voice [--only ids] [--force] [--voice SPEC]                     synthesise the voice-over (cached)
+  sms timeline [--strict]                                             build timeline, subtitles and audio plans
+  sms sfx | sms music [--seed N] | sms mix [--report F]               generate sound effects, music, final mix
+  sms audio                                                           voice → timeline → sfx → music → mix
+  sms preview                                                         open the interactive player (Vite)
+  sms stills [--scenes|--every S|--scene ID|--frames a,b] [--sheet]   still frames / contact sheets to review
+  sms render [--subtitles] [--workers N] [--crf 16] [--from f --to f] render the MP4
+  sms build [--subtitles]                                             everything: audio then render
+  sms check [--out file.mp4]                                          probe the rendered file (duration, streams)
+  sms info                                                            show the current project summary
+
+Each command takes --project <dir> (default: the nearest showmystuff.json).`);
+  },
+
+  version() { console.log(VERSION); },
+
+  async doctor() {
+    await run(process.execPath, [join(HOME, "scripts/doctor.mjs"), ...rest], { env: { ...process.env, SMS_HOME: HOME } });
+  },
+
+  async setup() {
+    await run("bash", [join(HOME, "scripts/setup.sh"), ...rest], { env: { ...process.env, SMS_HOME: HOME } });
+  },
+
+  async key() {
+    const which = positional[0];
+    if (which !== "elevenlabs") fail("usage: sms key elevenlabs");
+    const { createInterface } = await import("node:readline/promises");
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const key = (await rl.question("ElevenLabs API key (input is not stored in any project file): ")).trim();
+    rl.close();
+    if (!key) fail("empty key");
+    if (process.platform === "darwin") {
+      const r = spawnSync("security", ["add-generic-password", "-U", "-s", "showmystuff-elevenlabs", "-a", process.env.USER ?? "sms", "-w", key]);
+      if (r.status !== 0) fail("keychain write failed");
+      console.log("Stored in the macOS keychain (service: showmystuff-elevenlabs).");
+    } else {
+      const dir = join(homedir(), ".config/showmystuff");
+      mkdirSync(dir, { recursive: true });
+      const f = join(dir, "elevenlabs.key");
+      writeFileSync(f, key + "\n", { mode: 0o600 });
+      chmodSync(f, 0o600);
+      console.log(`Stored in ${f} (mode 600).`);
+    }
+  },
+
+  async init() {
+    const target = resolve(positional[0] ?? ".");
+    if (existsSync(join(target, "showmystuff.json"))) fail(`${target} already is a project`);
+    mkdirSync(target, { recursive: true });
+    cpSync(join(HOME, "templates/project"), target, { recursive: true });
+    const name = String(flags.name ?? basename(target)).replace(/[^\w.-]+/g, "-").toLowerCase();
+    const cfg = JSON.parse(readFileSync(join(target, "showmystuff.json"), "utf8"));
+    cfg.name = name;
+    cfg.output = `out/${name}.mp4`;
+    cfg.language = String(flags.lang ?? cfg.language ?? "en");
+    cfg.theme = { ...cfg.theme, preset: String(flags.theme ?? cfg.theme?.preset ?? "paper") };
+    cfg.brand = { ...cfg.brand, name: String(flags.brand ?? cfg.brand?.name ?? basename(target)) };
+    writeFileSync(join(target, "showmystuff.json"), JSON.stringify(cfg, null, 2) + "\n");
+    const scn = JSON.parse(readFileSync(join(target, "scenario.json"), "utf8"));
+    scn.language = cfg.language;
+    writeFileSync(join(target, "scenario.json"), JSON.stringify(scn, null, 2) + "\n");
+    const ts = join(target, "tsconfig.json");
+    if (existsSync(ts)) writeFileSync(ts, readFileSync(ts, "utf8").replaceAll("__SMS_HOME__", HOME));
+    console.log(`Project created in ${target}
+  showmystuff.json   title, output, theme, brand
+  scenario.json      scenes, voice-over text with {{cues}}, sound effects, music
+  capture-plan.json  screenshots to take from your app (sms capture)
+  scenes/            optional custom React scenes
+Next: edit capture-plan.json, then \`sms capture\`, write scenario.json, then \`sms build\`.`);
+  },
+
+  async capture() {
+    const project = projectDir();
+    const plan = positional[0] ? resolve(positional[0]) : join(project, "capture-plan.json");
+    await run(process.execPath, [join(HOME, "capture/capture.mjs"), "--project", project, "--plan", plan, ...passthrough(["serve", "base-url", "allow-remote", "only", "headed", "timeout"])], { env: { ...process.env, SMS_PROJECT: project } });
+  },
+
+  async voices() {
+    if (!PY) fail("Python environment missing: run `sms setup` first.");
+    const provider = positional[0] ?? "edge";
+    await run(PY, [join(AUDIO, "voices.py"), provider, ...passthrough(["lang", "search", "add"])], { cwd: AUDIO });
+  },
+
+  async voice() { await python("tts.py", passthrough(["only", "force", "voice", "parallel", "out"])); },
+  async timeline() { await node("build-timeline.mjs", passthrough(["strict"])); },
+  async sfx() { await python("sfx.py", passthrough(["only", "seed", "preview"])); },
+  async music() { await python("music.py", passthrough(["seed", "lufs", "stems", "max-tempo-dev"])); },
+  async mix() { await python("mix.py", passthrough(["report", "stems", "lufs", "ducking-db", "music-under-voice-db", "release-ms", "attack-ms", "bridge-ms"])); },
+
+  async audio() {
+    const project = projectDir();
+    const scenario = JSON.parse(readFileSync(join(project, "scenario.json"), "utf8"));
+    const hasText = (scenario.scenes ?? []).some((s) => s.text && String(s.text).trim());
+    if (hasText) await commands.voice(); else console.log("(no voice-over text in the scenario)");
+    await commands.timeline();
+    const sfxDir = join(project, "build/audio/sfx");
+    if (flags["force-sfx"] || !existsSync(sfxDir) || readdirSync(sfxDir).filter((f) => f.endsWith(".wav")).length < 14) await commands.sfx();
+    if (scenario.music?.enabled !== false) await commands.music(); else console.log("(music disabled in the scenario)");
+    await commands.mix();
+  },
+
+  async preview() {
+    const project = projectDir();
+    if (!existsSync(join(project, "build/timeline.json"))) await commands.timeline();
+    const vite = join(ENGINE, "node_modules/.bin/vite");
+    if (!existsSync(vite)) fail("engine dependencies missing: run `sms setup`");
+    console.log("Preview: space = play/pause, arrows = frame by frame. Ctrl+C to stop.");
+    await run(vite, ["--open"], { cwd: ENGINE, env: { ...process.env, SMS_PROJECT: project, SMS_LOGLEVEL: "info" } });
+  },
+
+  async stills() { await node("stills.mjs", passthrough(["scenes", "every", "scene", "frames", "sheet", "out", "skip-build", "subtitles"])); },
+  async render() { await node("render.mjs", passthrough(["subtitles", "workers", "crf", "from", "to", "out", "skip-build", "no-audio", "no-subs"])); },
+
+  async build() {
+    await commands.audio();
+    await commands.render();
+    if (flags.subtitles) { /* already rendered with burned-in subtitles */ }
+    await commands.check();
+  },
+
+  async check() {
+    const project = projectDir();
+    const cfg = JSON.parse(readFileSync(join(project, "showmystuff.json"), "utf8"));
+    const file = resolve(project, flags.out ?? (flags.subtitles ? (cfg.output ?? "out/video.mp4").replace(/\.mp4$/, "-subtitled.mp4") : cfg.output ?? "out/video.mp4"));
+    if (!existsSync(file)) fail(`${file} not found`);
+    const r = spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration,size:stream=codec_type,codec_name,width,height,r_frame_rate,channels", "-of", "json", file], { encoding: "utf8" });
+    if (r.status !== 0) fail("ffprobe failed");
+    const info = JSON.parse(r.stdout);
+    const dur = Number(info.format.duration);
+    const streams = info.streams.map((s) => `${s.codec_type}:${s.codec_name}${s.width ? ` ${s.width}x${s.height} ${s.r_frame_rate}` : ""}${s.channels ? ` ${s.channels}ch` : ""}`);
+    const tl = existsSync(join(project, "build/timeline.json")) ? JSON.parse(readFileSync(join(project, "build/timeline.json"), "utf8")) : null;
+    const expected = tl ? tl.totalFrames / tl.fps : null;
+    console.log(`${file}\n  duration ${dur.toFixed(2)} s${expected ? ` (timeline ${expected.toFixed(2)} s)` : ""} · ${(Number(info.format.size) / 1e6).toFixed(1)} MB\n  streams: ${streams.join(" · ")}`);
+    if (expected && Math.abs(dur - expected) > 0.5) fail(`duration differs from the timeline by ${(dur - expected).toFixed(2)} s`);
+    if (!info.streams.some((s) => s.codec_type === "audio")) console.log("  ! no audio stream (run `sms audio` then `sms render`)");
+  },
+
+  async info() {
+    const project = projectDir();
+    const cfg = JSON.parse(readFileSync(join(project, "showmystuff.json"), "utf8"));
+    const scn = JSON.parse(readFileSync(join(project, "scenario.json"), "utf8"));
+    const tl = existsSync(join(project, "build/timeline.json")) ? JSON.parse(readFileSync(join(project, "build/timeline.json"), "utf8")) : null;
+    const caps = join(project, "public/captures/captures.json");
+    const nCaps = existsSync(caps) ? JSON.parse(readFileSync(caps, "utf8")).length : 0;
+    const voiceIdx = join(project, "build/voice/index.json");
+    const nVoice = existsSync(voiceIdx) ? Object.keys(JSON.parse(readFileSync(voiceIdx, "utf8"))).length - 1 : 0;
+    console.log(`Project ${cfg.name} (${project})
+  language ${cfg.language ?? scn.language ?? "en"} · theme ${cfg.theme?.preset ?? "paper"} · ${cfg.width ?? 1920}x${cfg.height ?? 1080} @ ${cfg.fps ?? 30} fps
+  scenes ${scn.scenes?.length ?? 0} · captures ${nCaps} · voices ${nVoice}${tl ? ` · timeline ${(tl.totalFrames / tl.fps).toFixed(1)} s` : " · timeline not built"}
+  voice ${typeof scn.voice === "string" ? scn.voice : JSON.stringify(scn.voice ?? "edge (default)")}
+  output ${cfg.output ?? "out/video.mp4"}${existsSync(resolve(project, cfg.output ?? "out/video.mp4")) ? " (rendered)" : " (not rendered yet)"}`);
+  },
+};
+
+const fn = commands[command];
+if (!fn) {
+  console.error(`sms: unknown command "${command}"\n`);
+  await commands.help();
+  process.exit(2);
+}
+try {
+  await fn();
+} catch (e) {
+  fail(e.message ?? String(e), e.code && Number.isInteger(e.code) ? e.code : 1);
+}

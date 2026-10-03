@@ -1,0 +1,15 @@
+/* Fonts (SIL Open Font License, shipped through npm): Fraunces (display), Inter (text), JetBrains Mono (labels). */
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/jetbrains-mono";
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #111; }
+body {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  font-family: "Inter Variable", Inter, system-ui, sans-serif;
+}
+/* Time is driven by the engine: no autonomous CSS animation or transition. */
+*, *::before, *::after { animation: none !important; transition: none !important; caret-color: transparent; }
+img { display: block; }

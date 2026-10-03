@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Notely — demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --ink:#1f2430; --muted:#6b7280; --line:#e5e7eb; --accent:#4f46e5; --accent-soft:#eef2ff; --ok:#15803d; --ok-soft:#dcfce7; --warn:#a16207; --warn-soft:#fef3c7; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 15px/1.5 -apple-system, "Segoe UI", Inter, Roboto, sans-serif; color: var(--ink); background:#f8fafc; }
+  .app { display:grid; grid-template-columns: 240px 1fr; min-height:100vh; }
+  aside { background:#111827; color:#e5e7eb; padding:24px 18px; display:flex; flex-direction:column; gap:22px; }
+  .logo { display:flex; align-items:center; gap:10px; font-weight:700; font-size:18px; color:#fff; }
+  .logo span { display:inline-grid; place-items:center; width:30px; height:30px; border-radius:8px; background:var(--accent); }
+  nav a { display:block; padding:9px 12px; border-radius:8px; color:#cbd5e1; text-decoration:none; }
+  nav a.active { background:#1f2937; color:#fff; }
+  .profile { margin-top:auto; display:flex; gap:10px; align-items:center; font-size:13px; color:#cbd5e1; }
+  .profile b { display:inline-grid; place-items:center; width:34px; height:34px; border-radius:50%; background:#fbbf24; color:#111827; }
+  main { padding:28px 36px; }
+  header.top { display:flex; align-items:center; justify-content:space-between; margin-bottom:22px; }
+  header.top h1 { margin:0; font-size:24px; }
+  .search { display:flex; align-items:center; gap:8px; width:340px; padding:9px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--muted); }
+  .search input { border:0; outline:0; flex:1; font:inherit; }
+  .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:24px; }
+  .kpi { background:#fff; border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .kpi small { color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-size:11px; }
+  .kpi strong { display:block; font-size:28px; margin-top:4px; }
+  .kpi em { font-style:normal; color:var(--ok); font-size:13px; }
+  .grid { display:grid; grid-template-columns: 2fr 1fr; gap:20px; }
+  .card { background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px 20px; }
+  .card h2 { margin:0 0 12px; font-size:16px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); font-size:14px; }
+  th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+  .chip { display:inline-block; padding:3px 9px; border-radius:999px; font-size:12px; font-weight:600; }
+  .chip.ok { background:var(--ok-soft); color:var(--ok); } .chip.warn { background:var(--warn-soft); color:var(--warn); } .chip.todo { background:var(--accent-soft); color:var(--accent); }
+  .btn { display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; text-decoration:none; border:0; font:inherit; cursor:pointer; }
+  .list li { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .list { list-style:none; margin:0; padding:0; }
+  .note { margin-top:16px; padding:12px 14px; background:var(--accent-soft); border-left:4px solid var(--accent); border-radius:8px; font-size:14px; }
+  form.new { display:grid; gap:14px; max-width:640px; }
+  label { display:grid; gap:6px; font-size:13px; color:var(--muted); }
+  input[type=text], textarea, select { font:inherit; padding:10px 12px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="logo"><span>N</span> Notely</div>
+    <nav>
+      <a class="active" href="/">Dashboard</a>
+      <a href="/notes.html">Notes</a>
+      <a href="#">Projects</a>
+      <a href="#">Reports</a>
+      <a href="#">Settings</a>
+    </nav>
+    <div class="profile"><b>AM</b><div>Alex Morgan<br><span style="color:#94a3b8">Product team</span></div></div>
+  </aside>
+  <main>
+    <header class="top">
+      <h1>Good morning, Alex</h1>
+      <div class="search" id="search">🔍 <input placeholder="Search notes, people, projects…"></div>
+    </header>
+    <section class="kpis" id="kpis">
+      <div class="kpi"><small>Open notes</small><strong>128</strong><em>+12 this week</em></div>
+      <div class="kpi"><small>Shared with you</small><strong>34</strong><em>+5</em></div>
+      <div class="kpi"><small>Due today</small><strong>6</strong><em style="color:var(--warn)">2 overdue</em></div>
+      <div class="kpi"><small>Team activity</small><strong>92%</strong><em>on track</em></div>
+    </section>
+    <div class="grid">
+      <div class="card" id="recent">
+        <h2>Recent notes</h2>
+        <table>
+          <thead><tr><th>Title</th><th>Project</th><th>Owner</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr id="row-1"><td>Q3 launch checklist</td><td>Atlas</td><td>Alex Morgan</td><td><span class="chip warn">Due today</span></td></tr>
+            <tr><td>Customer interview — Lumen</td><td>Research</td><td>Sam Lee</td><td><span class="chip ok">Done</span></td></tr>
+            <tr><td>Pricing page copy v3</td><td>Website</td><td>Priya Nair</td><td><span class="chip todo">In review</span></td></tr>
+            <tr><td>Onboarding flow notes</td><td>Atlas</td><td>Alex Morgan</td><td><span class="chip todo">Draft</span></td></tr>
+            <tr><td>Retro — sprint 41</td><td>Team</td><td>Jonas Berg</td><td><span class="chip ok">Done</span></td></tr>
+          </tbody>
+        </table>
+        <div class="note" id="tip">Tip: press <b>N</b> anywhere to start a new note.</div>
+      </div>
+      <div>
+        <div class="card" id="actions">
+          <h2>Next actions</h2>
+          <ul class="list">
+            <li>Review pricing copy <span class="chip todo">today</span></li>
+            <li>Send Lumen summary <span class="chip warn">overdue</span></li>
+            <li>Plan sprint 42 <span class="chip ok">Thu</span></li>
+          </ul>
+          <p style="margin:16px 0 0"><a class="btn" id="new-note" href="/notes.html">+ New note</a></p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

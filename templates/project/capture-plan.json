@@ -1,0 +1,18 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "viewport": { "width": 1440, "height": 900 },
+  "scale": 2,
+  "locale": "en-US",
+  "timezone": "UTC",
+  "colorScheme": "light",
+  "hideSelectors": [],
+  "forbidden": [],
+  "captures": [
+    {
+      "id": "home",
+      "goto": "/",
+      "fullPage": true,
+      "frames": { "main": "main", "cta": "main a, main button" }
+    }
+  ]
+}

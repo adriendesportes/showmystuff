@@ -1,0 +1,29 @@
+{
+  "serve": "demo-site",
+  "viewport": { "width": 1440, "height": 900 },
+  "scale": 2,
+  "locale": "en-US",
+  "timezone": "UTC",
+  "forbidden": ["password", "\\b\\d{16}\\b"],
+  "captures": [
+    {
+      "id": "dashboard",
+      "goto": "/",
+      "fullPage": true,
+      "frames": { "kpis": "#kpis", "recent": "#recent", "actions": "#actions", "new-note": "#new-note", "search": "#search", "first-row": "#row-1", "tip": "#tip" }
+    },
+    {
+      "id": "new-note",
+      "goto": "/notes.html",
+      "fullPage": true,
+      "frames": { "form": "#form", "title": "#title", "content": "#content", "share": "#share", "save": "#save" }
+    },
+    {
+      "id": "new-note-filled",
+      "goto": "/notes.html",
+      "actions": [{ "fill": ["#title", "Q3 launch checklist"] }, { "fill": ["#content", "- Confirm pricing page copy\n- Ship onboarding v2\n- Brief support team"] }, { "fill": ["#share", "Product team"] }],
+      "fullPage": true,
+      "frames": { "form": "#form", "title": "#title", "content": "#content", "share": "#share", "save": "#save" }
+    }
+  ]
+}

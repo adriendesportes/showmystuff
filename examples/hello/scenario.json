@@ -1,0 +1,158 @@
+{
+  "title": "Notely — a two-minute tour",
+  "language": "en",
+  "voice": "edge:en-US-AriaNeural",
+  "music": { "bpm": 94, "seed": 3, "gain_db": 0 },
+  "sfxGain": 0,
+  "chapters": [
+    { "num": 1, "title": "Why Notely" },
+    { "num": 2, "title": "The dashboard" },
+    { "num": 3, "title": "A new note" }
+  ],
+  "scenes": [
+    {
+      "id": "s01-title",
+      "component": "Title",
+      "duration": 5,
+      "music": 2,
+      "accent": true,
+      "props": {
+        "eyebrow": "Product tour",
+        "footnote": "Demo data only",
+        "docs": [
+          { "title": "Launch checklist", "subtitle": "Atlas · due today", "label": "Note", "tone": "warn" },
+          { "title": "Customer interview", "subtitle": "Research", "label": "Note", "tone": "ok", "signature": true },
+          { "title": "Pricing copy v3", "subtitle": "Website", "label": "Note", "tone": "secondary" }
+        ]
+      },
+      "sfx": [{ "type": "impact-soft", "at": 0.25, "gain": -8 }]
+    },
+    {
+      "id": "c1",
+      "component": "Chapter",
+      "chapter": 1,
+      "duration": 3.4,
+      "transition": { "type": "curtain", "duration": 0.8 },
+      "music": 2,
+      "accent": true,
+      "props": { "number": 1, "total": 3, "title": "Why Notely", "subtitle": "One place for notes, next actions and what your team shares.", "steps": ["Capture", "Organise", "Share"], "step": 0 },
+      "sfx": [{ "type": "impact-soft", "at": 0.55, "gain": -10 }]
+    },
+    {
+      "id": "s02-problem",
+      "component": "Compare",
+      "chapter": 1,
+      "transition": { "type": "wipe", "duration": 0.7 },
+      "music": 1,
+      "text": "Most teams keep notes {{before}}in five different places, and the next action gets lost. {{after}}Notely keeps notes, owners and deadlines together, so nothing slips.",
+      "props": {
+        "eyebrow": "The problem",
+        "title": "Before and after",
+        "left": { "title": "Before", "items": ["Notes spread across tools", "Follow-ups by memory", "Deadlines in someone's head"], "at": "cue:before" },
+        "right": { "title": "With Notely", "items": ["One searchable workspace", "Next actions on every note", "Owners and due dates built in"], "at": "cue:after" }
+      },
+      "sfx": [{ "type": "page", "at": "cue:before", "gain": -14 }, { "type": "ding", "at": "cue:after", "gain": -12 }]
+    },
+    {
+      "id": "c2",
+      "component": "Chapter",
+      "chapter": 2,
+      "duration": 3.2,
+      "transition": { "type": "curtain", "duration": 0.8 },
+      "music": 2,
+      "accent": true,
+      "props": { "number": 2, "total": 3, "title": "The dashboard", "steps": ["Capture", "Organise", "Share"], "step": 1 },
+      "sfx": [{ "type": "impact-soft", "at": 0.55, "gain": -10 }]
+    },
+    {
+      "id": "s03-dashboard",
+      "component": "Screen",
+      "chapter": 2,
+      "transition": { "type": "fade", "duration": 0.6 },
+      "music": 1,
+      "text": "This is the {{home}}dashboard. {{kpis}}Four numbers tell you where the team stands. {{recent}}Recent notes show who owns what and what is due. {{actions}}And your next actions wait on the right, {{button}}one click from a new note.",
+      "props": {
+        "capture": "dashboard",
+        "url": "notely.example/dashboard",
+        "camera": [
+          { "at": "cue:kpis", "target": "frame:kpis", "duration": 34 },
+          { "at": "cue:recent", "target": "frame:recent", "duration": 34, "fill": 0.7 },
+          { "at": "cue:actions", "target": "frame:actions", "duration": 34, "fill": 0.55 },
+          { "at": "end-1.0", "target": "window", "duration": 28 }
+        ],
+        "spotlights": [
+          { "at": "cue:kpis", "until": "cue:recent", "target": "frame:kpis", "pad": 6 },
+          { "at": "cue:recent", "until": "cue:actions", "target": "frame:first-row", "pad": 4 },
+          { "at": "cue:button", "until": "end-1.0", "target": "frame:new-note", "pad": 8 }
+        ],
+        "callouts": [
+          { "at": "cue:kpis+0.4", "until": "cue:recent", "anchor": "frame:kpis", "side": "bottom", "title": "Live numbers", "text": "Open, shared, due today, team activity." }
+        ],
+        "cursor": [
+          { "at": "cue:button-0.2", "target": "frame:new-note", "duration": 26 },
+          { "at": "cue:button+0.5", "target": "frame:new-note", "click": true, "duration": 1 }
+        ]
+      },
+      "sfx": [{ "type": "pop", "at": "cue:kpis", "gain": -14 }, { "type": "click", "at": "cue:button+0.5", "gain": -12 }]
+    },
+    {
+      "id": "c3",
+      "component": "Chapter",
+      "chapter": 3,
+      "duration": 3.2,
+      "transition": { "type": "curtain", "duration": 0.8 },
+      "music": 2,
+      "accent": true,
+      "props": { "number": 3, "total": 3, "title": "A new note", "steps": ["Capture", "Organise", "Share"], "step": 2 },
+      "sfx": [{ "type": "impact-soft", "at": 0.55, "gain": -10 }]
+    },
+    {
+      "id": "s04-new-note",
+      "component": "Screen",
+      "chapter": 3,
+      "transition": { "type": "slide", "duration": 0.6 },
+      "music": 1,
+      "text": "A new note takes seconds. {{title}}Give it a title, {{content}}write freely, {{share}}share it with a person or a team, {{save}}and save. Notely keeps the owner and the due date with it.",
+      "props": {
+        "views": [{ "at": 0, "capture": "new-note" }, { "at": "cue:save+0.4", "capture": "new-note-filled" }],
+        "url": "notely.example/notes/new",
+        "camera": [{ "at": "cue:title", "target": "frame:form", "duration": 34, "fill": 0.8 }, { "at": "end-1.0", "target": "window", "duration": 28 }],
+        "typing": [
+          { "at": "cue:title", "until": "cue:save+0.4", "target": "frame:title", "text": "Q3 launch checklist", "cps": 16, "size": 15 },
+          { "at": "cue:share", "until": "cue:save+0.4", "target": "frame:share", "text": "Product team", "cps": 14, "size": 15 }
+        ],
+        "cursor": [{ "at": "cue:save", "target": "frame:save", "duration": 24 }, { "at": "cue:save+0.3", "target": "frame:save", "click": true, "duration": 1 }],
+        "spotlights": [{ "at": "cue:share", "until": "cue:save", "target": "frame:share", "pad": 6 }],
+        "notifications": [{ "at": "cue:save+0.6", "until": "end-0.6", "title": "Note saved", "text": "Shared with Product team", "tone": "ok" }]
+      },
+      "sfx": [{ "type": "key", "at": "cue:title", "n": 10, "interval": 0.07, "gain": -18 }, { "type": "key", "at": "cue:share", "n": 7, "interval": 0.08, "gain": -18 }, { "type": "click", "at": "cue:save+0.3", "gain": -12 }, { "type": "ding", "at": "cue:save+0.6", "gain": -12 }]
+    },
+    {
+      "id": "s05-recap",
+      "component": "Steps",
+      "transition": { "type": "fade", "duration": 0.6 },
+      "music": 1,
+      "text": "Three steps, every day. {{one}}Capture what matters. {{two}}Organise it with owners and dates. {{three}}Share it with the people who need it.",
+      "props": {
+        "eyebrow": "In short",
+        "title": "Capture, organise, share",
+        "steps": [
+          { "title": "Capture", "text": "Notes in seconds, from anywhere.", "icon": "sparkle", "at": "cue:one" },
+          { "title": "Organise", "text": "Owners, projects and due dates on every note.", "icon": "layers", "at": "cue:two" },
+          { "title": "Share", "text": "With a person or a whole team, in one click.", "icon": "users", "at": "cue:three" }
+        ]
+      },
+      "sfx": [{ "type": "pop", "at": "cue:one", "gain": -14 }, { "type": "pop", "at": "cue:two", "gain": -14 }, { "type": "pop", "at": "cue:three", "gain": -14 }]
+    },
+    {
+      "id": "s06-outro",
+      "component": "Outro",
+      "transition": { "type": "zoom", "duration": 0.7 },
+      "music": 2,
+      "accent": true,
+      "duration": 6,
+      "props": { "text": "Notes that move your team forward.", "cta": "Start free", "footnote": "Demo data · made with Show My Stuff" },
+      "sfx": [{ "type": "impact-soft", "at": 0.3, "gain": -9 }]
+    }
+  ]
+}

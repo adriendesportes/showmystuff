@@ -1,0 +1,67 @@
+{
+  "title": "My product — a short tour",
+  "language": "en",
+  "voice": "edge:en-US-AriaNeural",
+  "music": { "bpm": 94, "seed": 3, "gain_db": 0 },
+  "sfxGain": 0,
+  "chapters": [
+    { "num": 1, "title": "The problem" },
+    { "num": 2, "title": "The tour" }
+  ],
+  "scenes": [
+    {
+      "id": "s01-title",
+      "component": "Title",
+      "duration": 5,
+      "music": 2,
+      "accent": true,
+      "props": { "eyebrow": "Product tour", "footnote": "Made with Show My Stuff" },
+      "sfx": [{ "type": "impact-soft", "at": 0.25, "gain": -8 }]
+    },
+    {
+      "id": "s02-problem",
+      "component": "Bullets",
+      "chapter": 1,
+      "transition": { "type": "curtain", "duration": 0.8 },
+      "music": 1,
+      "text": "Teams lose time on three things: {{one}}scattered information, {{two}}manual follow-ups, {{three}}and reports nobody reads.",
+      "props": {
+        "eyebrow": "The problem",
+        "title": "Where the time goes",
+        "items": [
+          { "text": "Scattered information", "icon": "folder", "at": "cue:one" },
+          { "text": "Manual follow-ups", "icon": "bell", "at": "cue:two" },
+          { "text": "Reports nobody reads", "icon": "chart", "at": "cue:three" }
+        ]
+      },
+      "sfx": [{ "type": "pop", "at": "cue:one", "gain": -14 }, { "type": "pop", "at": "cue:two", "gain": -14 }, { "type": "pop", "at": "cue:three", "gain": -14 }]
+    },
+    {
+      "id": "s03-screen",
+      "component": "Screen",
+      "chapter": 2,
+      "transition": { "type": "fade", "duration": 0.6 },
+      "music": 1,
+      "text": "Here is the {{home}}home screen. {{detail}}Everything important sits in one place, {{action}}and the next action is always one click away.",
+      "props": {
+        "capture": "home",
+        "url": "app.example.com",
+        "camera": [{ "at": "cue:detail", "target": "frame:main", "duration": 36 }, { "at": "cue:action", "target": "frame:cta", "zoom": 1.9 }, { "at": "end-1.2", "target": "window" }],
+        "spotlights": [{ "at": "cue:action", "until": "end-1.2", "target": "frame:cta", "pad": 8 }],
+        "cursor": [{ "at": "cue:action+0.6", "target": "frame:cta", "click": true }],
+        "callouts": [{ "at": "cue:detail+0.3", "until": "cue:action", "anchor": "frame:main", "side": "right", "title": "At a glance", "text": "The essentials, nothing else." }]
+      },
+      "sfx": [{ "type": "click", "at": "cue:action+0.6", "gain": -12 }]
+    },
+    {
+      "id": "s04-outro",
+      "component": "Outro",
+      "transition": { "type": "zoom", "duration": 0.7 },
+      "music": 2,
+      "accent": true,
+      "duration": 6,
+      "props": { "text": "Less busywork. More work that matters.", "cta": "Try it today" },
+      "sfx": [{ "type": "impact-soft", "at": 0.3, "gain": -9 }]
+    }
+  ]
+}

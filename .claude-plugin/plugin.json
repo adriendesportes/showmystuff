@@ -1,0 +1,12 @@
+{
+  "name": "showmystuff",
+  "displayName": "Show My Stuff",
+  "version": "0.1.0",
+  "description": "Produce a narrated demo video of your software (screenshots, motion design, voice-over, music, subtitles) from inside Claude Code with the /sms skill.",
+  "author": { "name": "Adrien Desportes", "url": "https://github.com/adriendesportes" },
+  "homepage": "https://github.com/adriendesportes/showmystuff",
+  "repository": "https://github.com/adriendesportes/showmystuff",
+  "license": "MIT",
+  "keywords": ["video", "demo", "screencast", "motion-design", "tts", "ffmpeg", "playwright"],
+  "skills": ["./skills/"]
+}

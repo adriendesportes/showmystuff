@@ -1,0 +1,32 @@
+# Dependencies and environments
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+
+# Generated project artefacts (never commit renders or voices)
+build/
+out/
+dist/
+.dist-*/
+.rendu/
+.render/
+*.mp4
+*.mov
+*.wav
+*.mp3
+*.aiff
+*.m4a
+
+# Secrets: showmystuff never stores keys in a project, but just in case
+.env
+.env.*
+!.env.example
+secrets.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

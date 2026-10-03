@@ -1,0 +1,13 @@
+{
+  "name": "my-demo",
+  "output": "out/my-demo.mp4",
+  "language": "en",
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "theme": { "preset": "paper" },
+  "brand": { "name": "My product", "tagline": "What it does, in one line", "url": "example.com" },
+  "overlay": { "chapterTag": true, "progress": true },
+  "subtitles": { "maxChars": 42 },
+  "render": { "crf": 16, "preset": "slow" }
+}
