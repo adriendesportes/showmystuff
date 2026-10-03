@@ -33,7 +33,7 @@ fi
 
 say "Engine dependencies (npm)"
 cd "$SMS_HOME/engine"
-if [[ -f package-lock.json ]]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+if [[ -f package-lock.json ]]; then npm ci --no-audit --no-fund --loglevel error; else npm install --no-audit --no-fund --loglevel error; fi
 
 # ---- Python --------------------------------------------------------------------------------
 say "Python environment"

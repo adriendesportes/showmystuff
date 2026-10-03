@@ -146,7 +146,7 @@ def build_grid(plan: dict, max_dev: float) -> tuple:
         length = wanted - t
         info = {"index": i, "intensity": intensity, "accent_start": bool(s.get("accent_start", False)), "requested_start_s": float(s["start_s"]), "actual_start_s": round(t, 3)}
         if length < 0.5 * bar_nom and not (last and not bars):
-            cm.warn(f"section {i} too short or outside the duration ({length:.2f} s): ignored")
+            cm.info(f"  section {i}: shorter than half a bar ({length:.2f} s), merged with its neighbours")
             infos.append({**info, "ignored": True})
             continue
         d_min, d_max = bar_nom * (1.0 - max_dev), bar_nom * (1.0 + max_dev)
@@ -161,8 +161,10 @@ def build_grid(plan: dict, max_dev: float) -> tuple:
         for k in range(n):
             bars.append(Bar(t + k * d, d, i, intensity, info["accent_start"] and k == 0 and bool(bars), k))
         shift = t - float(s["start_s"])
-        if abs(shift) > 0.02:
+        if abs(shift) > 1.0:
             cm.warn(f"section {i}: actual start {t:.2f} s instead of {float(s['start_s']):.2f} s (shift {shift:+.2f} s)")
+        elif abs(shift) > 0.02:
+            cm.info(f"  section {i}: starts on the bar line at {t:.2f} s ({shift:+.2f} s from the scene)")
         infos.append({**info, "actual_end_s": round(t + n * d, 3), "bars": n, "bpm": round(240.0 / d, 2), "fit": fit})
         t += n * d
     for b in bars:

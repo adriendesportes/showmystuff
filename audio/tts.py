@@ -666,6 +666,9 @@ async def main_async(args) -> int:
     cm.write_json(folder / "index.json", index)
     total = sum(v for k, v in index.items() if not k.startswith("_"))
     cm.info(f"index.json: {len(index) - 1} scene(s), {total:.1f} s of voice — {time.time() - t0:.1f} s")
+    if any(isinstance(r, dict) and r.get("timing") == "estimated" for r in results):
+        cm.info("Word timings are estimated for this provider (cues land near the right word, not on it); "
+                "edge and elevenlabs voices return measured timings.")
     return 1 if errors else 0
 
 

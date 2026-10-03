@@ -49,7 +49,7 @@
         "camera": [{ "at": "cue:detail", "target": "frame:main", "duration": 36 }, { "at": "cue:action", "target": "frame:cta", "zoom": 1.9 }, { "at": "end-1.2", "target": "window" }],
         "spotlights": [{ "at": "cue:action", "until": "end-1.2", "target": "frame:cta", "pad": 8 }],
         "cursor": [{ "at": "cue:action+0.6", "target": "frame:cta", "click": true }],
-        "callouts": [{ "at": "cue:detail+0.3", "until": "cue:action", "anchor": "frame:main", "side": "right", "title": "At a glance", "text": "The essentials, nothing else." }]
+        "callouts": [{ "at": "cue:detail+0.3", "until": "cue:action", "anchor": "frame:cta", "side": "bottom", "title": "At a glance", "text": "The essentials, nothing else." }]
       },
       "sfx": [{ "type": "click", "at": "cue:action+0.6", "gain": -12 }]
     },

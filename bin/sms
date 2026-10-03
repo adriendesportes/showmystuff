@@ -152,7 +152,8 @@ Each command takes --project <dir> (default: the nearest showmystuff.json).`);
   scenario.json      scenes, voice-over text with {{cues}}, sound effects, music
   capture-plan.json  screenshots to take from your app (sms capture)
   scenes/            optional custom React scenes
-Next: edit capture-plan.json, then \`sms capture\`, write scenario.json, then \`sms build\`.`);
+Next: edit capture-plan.json (baseUrl of your running app, or "serve": "./folder" for static HTML),
+then \`sms capture\`, write scenario.json, then \`sms build\`.`);
   },
 
   async capture() {
@@ -218,7 +219,9 @@ Next: edit capture-plan.json, then \`sms capture\`, write scenario.json, then \`
     const expected = tl ? tl.totalFrames / tl.fps : null;
     console.log(`${file}\n  duration ${dur.toFixed(2)} s${expected ? ` (timeline ${expected.toFixed(2)} s)` : ""} · ${(Number(info.format.size) / 1e6).toFixed(1)} MB\n  streams: ${streams.join(" · ")}`);
     if (expected && Math.abs(dur - expected) > 0.5) fail(`duration differs from the timeline by ${(dur - expected).toFixed(2)} s`);
-    if (!info.streams.some((s) => s.codec_type === "audio")) console.log("  ! no audio stream (run `sms audio` then `sms render`)");
+    const hasAudio = info.streams.some((s) => s.codec_type === "audio");
+    if (!hasAudio) console.log("  ! no audio stream (run `sms audio` then `sms render`)");
+    console.log(hasAudio ? "  OK: duration matches the timeline, video + audio streams present." : "  OK (video only).");
   },
 
   async info() {

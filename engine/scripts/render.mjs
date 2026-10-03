@@ -69,7 +69,8 @@ async function worker([x, y], i) {
     if (done % 150 === 0) {
       const elapsed = (Date.now() - t0) / 1000;
       const left = (elapsed / done) * (total - done);
-      console.log(`  ${done}/${total} frames · ${(done / elapsed).toFixed(1)} fps · ~${Math.ceil(left / 60)} min left`);
+      const eta = left < 90 ? `${Math.ceil(left)} s` : `${Math.ceil(left / 60)} min`;
+      console.log(`  ${done}/${total} frames · ${(done / elapsed).toFixed(1)} fps · ~${eta} left`);
     }
   }
   ff.stdin.end();

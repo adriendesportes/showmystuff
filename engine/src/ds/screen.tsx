@@ -304,12 +304,15 @@ function CalloutBox({ callout, screen, a, f }: { callout: Callout; screen: Point
   const width = callout.width ?? 420;
   const dx = side === "right" ? dist : side === "left" ? -dist : 0;
   const dy = side === "bottom" ? dist : side === "top" ? -dist : 0;
-  const bx = screen.x + dx;
-  const by = screen.y + dy;
   const dark = (callout.tone ?? "dark") === "dark";
   const s = spring({ frame: f - callout.at, config: { damping: 20, stiffness: 140 } });
   const ox = side === "left" ? -width : side === "right" ? 0 : -width / 2;
   const oyPct = side === "top" ? -100 : side === "bottom" ? 0 : -50;
+  // Keep the box inside the canvas (a frame that touches the right edge would push it off screen).
+  const margin = 24;
+  const bx = clamp(screen.x + dx, margin - ox, SCENE_W - width - margin - ox);
+  const estH = 120;
+  const by = clamp(screen.y + dy, margin + (side === "top" ? estH : side === "bottom" ? 0 : estH / 2), SCENE_H - margin - (side === "bottom" ? estH : side === "top" ? 0 : estH / 2));
   const lx = screen.x + dx * clamp(a * 1.2);
   const ly = screen.y + dy * clamp(a * 1.2);
   return (

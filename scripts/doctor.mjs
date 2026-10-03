@@ -2,7 +2,7 @@
 //   node doctor.mjs [--json] [--url http://localhost:3000] [--quick]
 import { spawnSync } from "node:child_process";
 import { existsSync, readdirSync, statSync, mkdtempSync, rmSync } from "node:fs";
-import { tmpdir, platform, cpus, freemem, totalmem } from "node:os";
+import { tmpdir, platform, cpus, totalmem } from "node:os";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -25,7 +25,7 @@ function sh(cmd, a = [], o = {}) {
 const which = (c) => sh(process.platform === "win32" ? "where" : "which", [c]).ok;
 
 // ---- System ---------------------------------------------------------------------------------
-add("system", "ok", `${platform()} · ${cpus().length} CPU · ${(freemem() / 1e9).toFixed(1)} / ${(totalmem() / 1e9).toFixed(1)} GB free RAM`);
+add("system", "ok", `${platform()} · ${cpus().length} CPU · ${(totalmem() / 1e9).toFixed(0)} GB RAM`);
 const nodeMajor = Number(process.versions.node.split(".")[0]);
 add("node", nodeMajor >= 20 ? "ok" : "fail", `v${process.versions.node}`, nodeMajor >= 20 ? "" : "Install Node.js >= 20 (https://nodejs.org)");
 

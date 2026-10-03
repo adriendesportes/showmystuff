@@ -198,7 +198,8 @@ try {
       await page.screenshot({ path: join(outDir, file), type: "png", animations: "disabled" });
       const finalHeight = fullPage ? Math.min(pageHeight, plan.maxPageHeight ?? 6000) : viewport.height;
       if (fullPage && pageHeight > viewport.height) await page.setViewportSize(viewport);
-      index.push({ id: c.id, url: c.goto ?? "", title: c.title ?? "", width: viewport.width, viewportHeight: viewport.height, pageHeight: finalHeight, scale: plan.scale ?? 2, frames, file });
+      const title = c.title ?? (await page.title().catch(() => "")) ?? "";
+      index.push({ id: c.id, url: c.goto ?? "", title, width: viewport.width, viewportHeight: viewport.height, pageHeight: finalHeight, scale: plan.scale ?? 2, frames, file });
       console.log(`    → ${file} (${viewport.width}×${finalHeight} CSS px, ${Object.keys(frames).length} frame(s))`);
     } catch (e) {
       failures++;
