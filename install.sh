@@ -41,8 +41,12 @@ esac
 
 say "Linking the Claude Code skill"
 mkdir -p "$HOME/.claude/skills"
-ln -sfn "$SMS_HOME/skills/sms" "$HOME/.claude/skills/sms"
-echo "Skill available as /sms in Claude Code (restart Claude Code if it is running)."
+if [[ -d "$HOME/.claude/skills/sms" && ! -L "$HOME/.claude/skills/sms" ]]; then
+  echo "~/.claude/skills/sms already exists as a real folder: left untouched (remove it to link the toolkit's skill)."
+else
+  ln -sfn "$SMS_HOME/skills/sms" "$HOME/.claude/skills/sms"
+  echo "Skill available as /sms in Claude Code (restart Claude Code if it is running)."
+fi
 
 say "Checking the environment"
 "$SMS_HOME/bin/sms" doctor || true

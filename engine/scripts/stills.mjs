@@ -4,7 +4,7 @@
 //   node stills.mjs --scenes                 (start+20, middle and end-20 of each scene)
 //   node stills.mjs --scene s03 --every 0.5
 //   options: --out out/stills  --skip-build  --sheet (contact sheets of 12)  --subtitles
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { args, browser, build, grab, projectDir, readTimeline, renderPage, serve, tempDist } from "./lib.mjs";
 
@@ -31,14 +31,18 @@ else if (a.every) {
 frames = [...new Set(frames)].filter((f) => f >= 0 && f < timeline.totalFrames).sort((x, y) => x - y);
 
 const persistent = join(project, "build/dist");
-const dist = a["skip-build"] && existsSync(persistent) ? persistent : tempDist(project);
-if (dist !== persistent) await build(project, dist);
-rmSync(out, { recursive: true, force: true });
+const dist = a["skip-build"] ? persistent : tempDist(project);
+if (dist !== persistent || !existsSync(join(dist, "index.html"))) await build(project, dist);
 mkdirSync(out, { recursive: true });
+// Only previous stills and sheets are removed, never other files of a user-supplied folder.
+for (const f of readdirSync(out)) if (/^(\d{6}-.*|sheet-\d+)\.png$/.test(f)) rmSync(join(out, f), { force: true });
 const server = await serve(dist);
 const nav = await browser();
 const page = await renderPage(nav, server.url, size, frames[0] ?? 0, a.subtitles ? "&subtitles=1" : "");
 const files = [];
+const abort = (e) => { console.error(`\n${e instanceof Error ? e.message : String(e)}`); if (dist !== persistent) rmSync(dist, { recursive: true, force: true }); process.exit(1); };
+process.on("unhandledRejection", abort);
+process.on("uncaughtException", abort);
 for (const f of frames) {
   const s = timeline.scenes.findLast((x) => f >= x.start);
   const name = `${String(f).padStart(6, "0")}-${s?.id ?? "x"}.png`;

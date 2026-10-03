@@ -568,8 +568,17 @@ def main() -> None:
     t_start = time.time()
     plan = cm.read_json(args.plan)
     seed = args.seed if args.seed is not None else int(plan.get("seed", 3))
-    x, markers, stems = generate(plan, seed, args.max_tempo_dev, args.lufs, bool(args.stems))
     out = cm.path(args.out)
+    duration = float(plan["duration_s"])
+    bar_nom = 240.0 / float(plan.get("bpm", 94))
+    first = min((float(s["start_s"]) for s in plan.get("sections", [])), default=0.0)
+    if duration - first < 2 * bar_nom + TAIL_S + 0.5:
+        # Too short for an intro, a resolution chord and a tail: a silent bed keeps the mix buildable.
+        cm.write_wav(out, np.zeros((int(round(duration * SR)), 2), np.float32), "PCM_24")
+        cm.write_json(out.with_name(out.stem + "-markers.json"), {"duration_s": duration, "silent": True, "reason": f"video shorter than {2 * bar_nom + TAIL_S + 0.5:.1f} s"})
+        cm.info(f"video too short for music ({duration:.1f} s): silent {cm.rel(out)} written (set music.enabled=false to skip this step)")
+        return
+    x, markers, stems = generate(plan, seed, args.max_tempo_dev, args.lufs, bool(args.stems))
     cm.write_wav(out, x, "PCM_24")
     markers["seed"] = seed
     markers["compute_s"] = round(time.time() - t_start, 1)

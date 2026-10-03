@@ -1,4 +1,4 @@
-import { StrictMode, useCallback, useEffect, useRef, useState } from "react";
+import { Component, StrictMode, useCallback, useEffect, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
 import "./styles.css";
@@ -11,8 +11,32 @@ import { Video } from "./Video";
 declare global {
   interface Window {
     __ready?: boolean;
+    __error?: string;
     __totalFrames?: number;
     __setFrame?: (f: number) => Promise<void>;
+  }
+}
+
+/** A scene that throws must stop the render loudly instead of leaving black frames. */
+class RenderErrorBoundary extends Component<{ children: ReactNode }, { message: string | null }> {
+  state = { message: null as string | null };
+  static getDerivedStateFromError(e: unknown) {
+    return { message: e instanceof Error ? e.message : String(e) };
+  }
+  componentDidCatch(e: unknown, info: ErrorInfo) {
+    const message = `${e instanceof Error ? e.message : String(e)}${info.componentStack ? `\n${info.componentStack.split("\n").slice(0, 4).join("\n")}` : ""}`;
+    window.__error = message;
+    console.error(`[scene error] ${message}`);
+  }
+  render() {
+    if (this.state.message) {
+      return (
+        <div style={{ position: "absolute", inset: 0, background: "#7f1d1d", color: "#fff", padding: 80, font: "500 34px/1.4 system-ui, sans-serif", whiteSpace: "pre-wrap" }}>
+          Scene error: {this.state.message}
+        </div>
+      );
+    }
+    return this.props.children;
   }
 }
 
@@ -30,7 +54,9 @@ function Scene({ frame }: { frame: number }) {
   return (
     <div style={{ width: WIDTH, height: HEIGHT, position: "relative", overflow: "hidden" }}>
       <FrameProvider value={frame}>
-        <Video />
+        <RenderErrorBoundary>
+          <Video />
+        </RenderErrorBoundary>
       </FrameProvider>
     </div>
   );

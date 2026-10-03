@@ -328,8 +328,10 @@ def parse_voice(v, default: dict) -> dict:
         if parts[0] in ("edge", "elevenlabs", "say", "piper"):
             spec["provider"] = parts[0]
             if parts[0] == "elevenlabs":
-                if len(parts) == 3:
-                    spec["model"], spec["voice"] = parts[1], parts[2]
+                if len(parts) >= 3:
+                    spec["model"], spec["voice"] = parts[1], parts[-1]
+                    if len(parts) > 3:
+                        cm.warn(f"voice \"{v}\": expected elevenlabs:<model>:<voice_id>, using {parts[1]} / {parts[-1]}")
                 elif len(parts) == 2:
                     spec["voice"] = parts[1]
             else:

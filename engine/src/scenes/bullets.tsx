@@ -7,7 +7,7 @@ import { C, F, SAFE } from "../ds/tokens";
 
 type Item = { text: string; detail?: string; icon?: string; at?: At };
 
-export function Bullets({ eyebrow, title, items, accent, layout = "list", start = 0.4, every = 0.9 }: { eyebrow?: string; title?: string; items: Item[]; accent?: string[]; layout?: "list" | "grid"; start?: number; every?: number }) {
+export function Bullets({ eyebrow, title, items = [], accent, layout = "list", start = 0.4, every = 0.9 }: { eyebrow?: string; title?: string; items: Item[]; accent?: string[]; layout?: "list" | "grid"; start?: number; every?: number }) {
   const f = useCurrentFrame();
   const at = useAt();
   const times = items.map((it, i) => at(it.at, at(start) + i * at(every)));

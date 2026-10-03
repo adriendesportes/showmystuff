@@ -15,7 +15,7 @@ function Col({ col, start, strike }: { col: Column; start: number; strike: boole
     <div style={{ flex: 1, padding: 40, background: C.surface, border: `1px solid ${C.line}`, borderTop: `6px solid ${t.dot}`, borderRadius: 6, boxShadow: "6px 6px 0 rgb(0 0 0 / 6%)", opacity: p, transform: `translateY(${(1 - p) * 30}px)` }}>
       <div style={{ font: `500 17px/1 ${F.mono}`, letterSpacing: "0.14em", textTransform: "uppercase", color: t.fg }}>{col.title}</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 22, marginTop: 34 }}>
-        {col.items.map((it, i) => {
+        {(col.items ?? []).map((it, i) => {
           const pi = prog(f, start + 14 + i * 9, 18, ease.out);
           const ps = strike ? prog(f, start + 30 + i * 9, 16, ease.smooth) : 0;
           return (
@@ -33,7 +33,7 @@ function Col({ col, start, strike }: { col: Column; start: number; strike: boole
   );
 }
 
-export function Compare({ eyebrow, title, left, right, at: start, strikeLeft = true }: { eyebrow?: string; title?: string; left: Column; right: Column; at?: At; strikeLeft?: boolean }) {
+export function Compare({ eyebrow, title, left = { title: "Before", items: [] }, right = { title: "After", items: [] }, at: start, strikeLeft = true }: { eyebrow?: string; title?: string; left: Column; right: Column; at?: At; strikeLeft?: boolean }) {
   const at = useAt();
   const t0 = at(start, 12);
   return (

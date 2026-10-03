@@ -87,7 +87,7 @@ def read_json(p):
 def write_json(p, data) -> None:
     p = path(p)
     p.parent.mkdir(parents=True, exist_ok=True)
-    tmp = p.with_suffix(p.suffix + ".tmp")
+    tmp = p.with_suffix(p.suffix + f".{os.getpid()}.{id(data) & 0xffff:x}.tmp")  # unique: concurrent writers of one file
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")

@@ -16,7 +16,7 @@
 //   ]
 // }
 // Actions: goto, click, fill [sel, text], type [sel, text], press [sel, key], hover, select [sel, value],
-//          check, wait (ms), waitFor (selector), waitForUrl (substring or regex), scroll (y or selector),
+//          check, wait (ms), waitFor (selector), waitForUrl (substring, or {"regex": "…"}), scroll (y or selector),
 //          evaluate (JS string), setViewport {width,height}.
 // Outputs: <project>/public/captures/<id>.png and captures.json (frames in CSS px from the top of the page).
 import { createReadStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -120,7 +120,7 @@ async function act(action) {
     case "uncheck": return page.locator(value).first().uncheck();
     case "wait": return page.waitForTimeout(Number(value));
     case "waitFor": return page.locator(value).first().waitFor();
-    case "waitForUrl": return page.waitForURL(value.startsWith("/") && value.endsWith("/") && value.length > 2 ? new RegExp(value.slice(1, -1)) : (u) => u.href.includes(value));
+    case "waitForUrl": return page.waitForURL(value && typeof value === "object" && value.regex ? new RegExp(value.regex) : (u) => u.href.includes(String(value)));
     case "scroll": return typeof value === "number" ? page.evaluate((y) => window.scrollTo(0, y), value) : page.locator(value).first().scrollIntoViewIfNeeded();
     case "evaluate": return page.evaluate(value);
     case "setViewport": return page.setViewportSize(value);
@@ -158,48 +158,58 @@ async function scanForbidden() {
   return hits;
 }
 
-const index = [];
 const existing = join(outDir, "captures.json");
 const previous = existsSync(existing) ? JSON.parse(readFileSync(existing, "utf8")) : [];
+// Entries of captures that are not (re)taken this time are kept, so a failure never erases the index.
+const results = new Map(previous.map((p) => [p.id, p]));
 const t0 = Date.now();
 let failures = 0;
+let loginOk = true;
 
 try {
   if (plan.login) {
     console.log("Login…");
-    if (plan.login.goto) await act({ goto: plan.login.goto });
-    for (const a of plan.login.actions ?? []) await act(a);
-    await settle();
+    try {
+      if (plan.login.goto) await act({ goto: plan.login.goto });
+      for (const a of plan.login.actions ?? []) await act(a);
+      await settle();
+    } catch (e) {
+      loginOk = false;
+      console.log(`  ✗ login failed: ${String(e.message).split("\n")[0]}\n    (check login.actions selectors; nothing was captured, captures.json left untouched)`);
+    }
   }
-  for (const c of plan.captures ?? []) {
-    if (only && !only.includes(c.id)) { const old = previous.find((p) => p.id === c.id); if (old) index.push(old); continue; }
+  for (const c of loginOk ? plan.captures ?? [] : []) {
+    if (only && !only.includes(c.id)) continue;
     console.log(`• ${c.id}`);
     try {
       if (c.goto) await act({ goto: c.goto });
       for (const a of c.actions ?? []) await act(a);
       await settle();
+      const viewport = page.viewportSize();
+      const pageHeight = await page.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
+      const fullPage = c.fullPage !== false;
+      const enlarged = fullPage && pageHeight > viewport.height;
+      if (enlarged) {
+        // Enlarging the viewport instead of fullPage keeps sticky sidebars (100vh) coherent.
+        await page.setViewportSize({ width: viewport.width, height: Math.min(pageHeight, plan.maxPageHeight ?? 6000) });
+        await page.waitForTimeout(150);
+      }
+      await page.evaluate(() => window.scrollTo(0, 0));
+      // Frames are measured in the final layout (after the resize), then the page is shot.
       const frames = await measureFrames(c.frames);
       const hits = await scanForbidden();
       if (hits.length) {
         console.log(`    ! forbidden content found: ${hits.join(", ")} — capture skipped`);
         failures++;
+        if (enlarged) await page.setViewportSize(viewport);
         continue;
       }
-      const viewport = page.viewportSize();
-      const pageHeight = await page.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
-      const fullPage = c.fullPage !== false;
-      if (fullPage && pageHeight > viewport.height) {
-        // Enlarging the viewport instead of fullPage keeps sticky sidebars (100vh) coherent.
-        await page.setViewportSize({ width: viewport.width, height: Math.min(pageHeight, plan.maxPageHeight ?? 6000) });
-        await page.evaluate(() => window.scrollTo(0, 0));
-        await page.waitForTimeout(150);
-      } else await page.evaluate(() => window.scrollTo(0, 0));
       const file = `${c.id}.png`;
       await page.screenshot({ path: join(outDir, file), type: "png", animations: "disabled" });
-      const finalHeight = fullPage ? Math.min(pageHeight, plan.maxPageHeight ?? 6000) : viewport.height;
-      if (fullPage && pageHeight > viewport.height) await page.setViewportSize(viewport);
+      const finalHeight = enlarged ? Math.min(pageHeight, plan.maxPageHeight ?? 6000) : viewport.height;
+      if (enlarged) await page.setViewportSize(viewport);
       const title = c.title ?? (await page.title().catch(() => "")) ?? "";
-      index.push({ id: c.id, url: c.goto ?? "", title, width: viewport.width, viewportHeight: viewport.height, pageHeight: finalHeight, scale: plan.scale ?? 2, frames, file });
+      results.set(c.id, { id: c.id, url: c.goto ?? "", title, width: viewport.width, viewportHeight: viewport.height, pageHeight: finalHeight, scale: plan.scale ?? 2, frames, file });
       console.log(`    → ${file} (${viewport.width}×${finalHeight} CSS px, ${Object.keys(frames).length} frame(s))`);
     } catch (e) {
       failures++;
@@ -207,10 +217,15 @@ try {
     }
   }
 } finally {
-  writeFileSync(existing, JSON.stringify(index, null, 2) + "\n");
+  if (loginOk) {
+    const order = new Map((plan.captures ?? []).map((c, i) => [c.id, i]));
+    const index = [...results.values()].sort((x, y) => (order.get(x.id) ?? 1e9) - (order.get(y.id) ?? 1e9));
+    writeFileSync(existing, JSON.stringify(index, null, 2) + "\n");
+  }
   await browser.close();
   if (server) await new Promise((r) => server.close(r));
 }
+const index = loginOk ? [...results.values()] : [];
 if (errors.length) console.log(`Page errors seen: ${[...new Set(errors)].slice(0, 5).join(" | ")}`);
 console.log(`${index.length} capture(s) in ${outDir} (${((Date.now() - t0) / 1000).toFixed(1)} s)${failures ? ` · ${failures} failed` : ""}`);
-process.exit(failures ? 1 : 0);
+process.exit(failures || !loginOk ? 1 : 0);

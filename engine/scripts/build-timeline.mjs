@@ -202,8 +202,11 @@ function segment(words) {
       const start = g[0].t;
       const end = g.at(-1).t + g.at(-1).d;
       if (end - start > MAX_S && j > i + 1) break;
-      const lines = splitLines(g.map((m) => m.text));
-      if (!lines) break;
+      let lines = splitLines(g.map((m) => m.text));
+      if (!lines) {
+        if (j !== i + 1) break;
+        lines = [[g[0].text], 20]; // a single word longer than maxChars (URL, identifier): keep it, penalised
+      }
       let cost = 1 + lines[1];
       if (j < n) {
         cost += cutCost(g.at(-1).text, false);

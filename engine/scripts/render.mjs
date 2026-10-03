@@ -23,12 +23,20 @@ const crf = String(a.crf ?? config.render?.crf ?? 16);
 const burnIn = !!a.subtitles;
 const defaultOut = config.output ?? `out/${config.name ?? "video"}.mp4`;
 const out = resolve(project, a.out ?? (burnIn ? defaultOut.replace(/\.mp4$/, "-subtitled.mp4") : defaultOut));
-const tmp = join(project, "build/.render");
+const tmp = join(project, `build/.render-${process.pid}`);
 const AUDIO = join(project, "build/audio/mix.wav");
 const SRT = join(project, "out/subtitles.srt");
-const dist = a["skip-build"] && existsSync(join(project, "build/dist")) ? join(project, "build/dist") : tempDist(project);
+const persistent = join(project, "build/dist");
+// --skip-build keeps a persistent build in build/dist (built once, reused by later renders/stills).
+const dist = a["skip-build"] ? persistent : tempDist(project);
+const cleanup = () => {
+  rmSync(tmp, { recursive: true, force: true });
+  if (dist !== persistent) rmSync(dist, { recursive: true, force: true });
+};
+process.on("uncaughtException", (e) => { console.error(e.message); cleanup(); process.exit(1); });
+process.on("unhandledRejection", (e) => { console.error(e instanceof Error ? e.message : String(e)); cleanup(); process.exit(1); });
 
-if (dist !== join(project, "build/dist")) {
+if (dist !== persistent || !existsSync(join(dist, "index.html"))) {
   console.log("Building the site (Vite)…");
   await build(project, dist);
 }
@@ -100,14 +108,14 @@ if (existsSync(AUDIO) && !a["no-audio"]) {
   codecs.push("-c:a", "aac", "-b:a", "192k");
   n++;
 } else if (!a["no-audio"]) console.log("  (no audio mix found: run `sms audio` to add voice and music)");
+const ISO3 = { en: "eng", fr: "fra", de: "deu", es: "spa", it: "ita", pt: "por", nl: "nld", sv: "swe", da: "dan", no: "nor", fi: "fin", pl: "pol", cs: "ces", tr: "tur", ru: "rus", uk: "ukr", ja: "jpn", ko: "kor", zh: "zho", ar: "ara", he: "heb", hi: "hin", el: "ell", hu: "hun", ro: "ron", ca: "cat", id: "ind", vi: "vie", th: "tha" };
 if (existsSync(SRT) && complete && !a["no-subs"]) {
-  const lang = config.language ?? "und";
+  const lang = ISO3[String(config.language ?? "").slice(0, 2).toLowerCase()] ?? "und";
   inputs.push("-i", SRT);
   maps.push("-map", `${n}:s`);
   codecs.push("-c:s", "mov_text", "-metadata:s:s:0", `language=${lang}`);
   n++;
 }
-await run("ffmpeg", ["-y", "-loglevel", "error", ...inputs, ...maps, ...codecs, "-movflags", "+faststart", out]);
-rmSync(tmp, { recursive: true, force: true });
-if (dist !== join(project, "build/dist")) rmSync(dist, { recursive: true, force: true });
+await run("ffmpeg", ["-y", "-loglevel", "error", ...inputs, ...maps, ...codecs, ...(complete ? [] : ["-shortest"]), "-movflags", "+faststart", out]);
+cleanup();
 console.log(`Done in ${((Date.now() - t0) / 60000).toFixed(1)} min → ${out}`);

@@ -7,7 +7,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { useCurrentFrame, Img } from "../engine/frame";
 import { clamp, ease, interpolate, lerp, prog, spring } from "../engine/anim";
-import { WIDTH as SCENE_W, HEIGHT as SCENE_H } from "../engine/config";
+import { WIDTH as SCENE_W, HEIGHT as SCENE_H, FPS } from "../engine/config";
 import { C, F, IS_DARK, RADIUS, S } from "./tokens";
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -352,8 +352,8 @@ function CalloutBox({ callout, screen, a, f }: { callout: Callout; screen: Point
 function TypedField({ typing, f }: { typing: Typing; f: number }) {
   if (f < typing.at || (typing.until !== undefined && f >= typing.until)) return null;
   const cps = typing.cps ?? 14;
-  const n = Math.min(typing.text.length, Math.floor(((f - typing.at) / 30) * cps));
-  const blink = Math.floor((f - typing.at) / 15) % 2 === 0 || n < typing.text.length;
+  const n = Math.min(typing.text.length, Math.floor(((f - typing.at) / FPS) * cps));
+  const blink = Math.floor((f - typing.at) / Math.round(FPS / 2)) % 2 === 0 || n < typing.text.length;
   const r = typing.rect;
   return (
     <div

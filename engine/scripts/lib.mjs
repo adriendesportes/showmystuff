@@ -120,13 +120,23 @@ export async function renderPage(nav, url, size, frame = 0, extra = "") {
   page.on("console", (m) => {
     if (m.type() === "error" || m.type() === "warning") console.log(`  [page ${m.type()}] ${m.text()}`);
   });
-  page.on("pageerror", (e) => console.log(`  [page exception] ${e.message}`));
+  page.on("pageerror", (e) => {
+    console.log(`  [page exception] ${e.message}`);
+    page.__error = page.__error ?? e.message;
+  });
   await page.goto(`${url}/?render=1&frame=${frame}${extra}`);
-  await page.waitForFunction(() => window.__ready === true, null, { timeout: 120000 });
+  await page.waitForFunction(() => window.__ready === true || !!window.__error, null, { timeout: 120000 });
+  await failIfSceneError(page, frame);
   return page;
+}
+
+async function failIfSceneError(page, frame) {
+  const message = page.__error ?? (await page.evaluate(() => window.__error ?? null));
+  if (message) throw new Error(`Scene error at frame ${frame}: ${message.split("\n")[0]} — fix the scenario (missing capture frame or prop) and run again.`);
 }
 
 export async function grab(page, frame, type = "jpeg") {
   await page.evaluate((f) => window.__setFrame(f), frame);
+  await failIfSceneError(page, frame);
   return page.screenshot(type === "png" ? { type: "png" } : { type: "jpeg", quality: 97 });
 }

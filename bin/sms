@@ -26,8 +26,13 @@ for (let i = 0; i < rest.length; i++) {
   } else positional.push(a);
 }
 
+function needValue(name) {
+  if (flags[name] === true) fail(`--${name} needs a value`);
+  return flags[name];
+}
+
 function projectDir(required = true) {
-  let p = flags.project ?? process.env.SMS_PROJECT;
+  let p = needValue("project") ?? process.env.SMS_PROJECT;
   if (!p) {
     let d = process.cwd();
     while (true) {
@@ -104,7 +109,7 @@ Each command takes --project <dir> (default: the nearest showmystuff.json).`);
   },
 
   async setup() {
-    await run("bash", [join(HOME, "scripts/setup.sh"), ...rest], { env: { ...process.env, SMS_HOME: HOME } });
+    await run("bash", [join(HOME, "scripts/setup.sh"), ...passthrough(["no-chromium", "python"])], { env: { ...process.env, SMS_HOME: HOME } });
   },
 
   async key() {
@@ -134,6 +139,7 @@ Each command takes --project <dir> (default: the nearest showmystuff.json).`);
     if (existsSync(join(target, "showmystuff.json"))) fail(`${target} already is a project`);
     mkdirSync(target, { recursive: true });
     cpSync(join(HOME, "templates/project"), target, { recursive: true });
+    for (const k of ["name", "lang", "theme", "brand"]) needValue(k);
     const name = String(flags.name ?? basename(target)).replace(/[^\w.-]+/g, "-").toLowerCase();
     const cfg = JSON.parse(readFileSync(join(target, "showmystuff.json"), "utf8"));
     cfg.name = name;
@@ -168,7 +174,11 @@ then \`sms capture\`, write scenario.json, then \`sms build\`.`);
     await run(PY, [join(AUDIO, "voices.py"), provider, ...passthrough(["lang", "search", "add"])], { cwd: AUDIO });
   },
 
-  async voice() { await python("tts.py", passthrough(["only", "force", "voice", "parallel", "out"])); },
+  async voice() {
+    const extra = passthrough(["only", "force", "voice", "parallel"]);
+    if (flags["voice-out"]) extra.push("--out", String(flags["voice-out"]));
+    await python("tts.py", extra);
+  },
   async timeline() { await node("build-timeline.mjs", passthrough(["strict"])); },
   async sfx() { await python("sfx.py", passthrough(["only", "seed", "preview"])); },
   async music() { await python("music.py", passthrough(["seed", "lufs", "stems", "max-tempo-dev"])); },

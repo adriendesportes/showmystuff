@@ -139,6 +139,9 @@ def main() -> None:
         if i0 + x.size > n:
             cm.warn(f"voice {v.get('id', wav.name)} cut by the end of the timeline")
             x = x[: max(0, n - i0)]
+        if x.size < int(0.05 * SR):
+            cm.warn(f"voice {v.get('id', wav.name)} starts after the end of the timeline: skipped")
+            continue
         clips.append({"id": v.get("id"), "start_s": float(v["start_s"]), "i0": i0, "x": x})
     mean = mean_speech_level(clips)
     stats = {"dees_max": 0.0, "dees_n": 0, "comp_max": 0.0, "comp_sum": 0.0, "active": 0}

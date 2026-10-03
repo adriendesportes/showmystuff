@@ -7,7 +7,7 @@ import { C, F, SAFE } from "../ds/tokens";
 
 type Step = { title: string; text?: string; icon?: string; at?: At };
 
-export function Steps({ eyebrow, title, steps, start = 0.5, every = 1.2, current }: { eyebrow?: string; title?: string; steps: Step[]; start?: number; every?: number; current?: number }) {
+export function Steps({ eyebrow, title, steps = [], start = 0.5, every = 1.2, current }: { eyebrow?: string; title?: string; steps: Step[]; start?: number; every?: number; current?: number }) {
   const f = useCurrentFrame();
   const at = useAt();
   const times = steps.map((s, i) => at(s.at, at(start) + i * at(every)));
@@ -19,7 +19,7 @@ export function Steps({ eyebrow, title, steps, start = 0.5, every = 1.2, current
         {eyebrow && <Eyebrow at={2}>{eyebrow}</Eyebrow>}
         {title && <DisplayTitle at={8} size={72} style={{ marginTop: 20 }}>{title}</DisplayTitle>}
         <div style={{ position: "relative", marginTop: title ? 54 : 30, paddingLeft: 24 }}>
-          <div style={{ position: "absolute", left: 24 + 36, top: 36, width: 2, height: Math.max(0, (steps.length - 1) * rowH) * prog(f, times[0] + 10, times.at(-1)! - times[0] + 20, ease.linear), background: C.line }} />
+          {steps.length > 1 && <div style={{ position: "absolute", left: 24 + 36, top: 36, width: 2, height: Math.max(0, (steps.length - 1) * rowH) * prog(f, times[0] + 10, times.at(-1)! - times[0] + 20, ease.linear), background: C.line }} />}
           {steps.map((s, i) => {
             const p = prog(f, times[i], 22, ease.out);
             const isCurrent = current === i;
